@@ -7,16 +7,17 @@ module Main where
 
 import Pure (buildCmd, readLines)
 import Time (activateOnSunrise, sunriseNow, sunsetNow)
-import Const (darkModeScript, lightModeScript, prog, query)
+import Const (darkModeScript, lightModeScript, query)
 import Sugar (continue, crash, destruct, exec, killall)
-import Types (ResponseMsg(..), ResponseCode(..), genericErr, toResponseMsg)
+import Types (ResponseCode(..), ResponseMsg(..), genericErr, toResponseMsg)
+import Getters (fetch, pathToCache, pathToConfig)
 
 import Data.List.Extra ((!?))
 import Data.ByteString.Char8 (unpack)
-import System.FilePath ((</>), takeDirectory)
-import System.Directory (XdgDirectory(XdgCache, XdgConfig), createDirectoryIfMissing, doesFileExist, getXdgDirectory)
-import Control.Exception (SomeException, catch, try)
-import Network.HTTP.Request (Response(responseBody, responseStatus), get)
+import System.FilePath (takeDirectory)
+import System.Directory (createDirectoryIfMissing, doesFileExist)
+import Control.Exception (SomeException, catch)
+import Network.HTTP.Request (Response(responseBody, responseStatus))
 
 -- error handling
 -- refactor into modules
@@ -24,19 +25,6 @@ import Network.HTTP.Request (Response(responseBody, responseStatus), get)
 -- eliminate as many do blocks as possible
 -- introduce liquid types and checking
 -- whitepaper!
-
-pathToCache :: String -> IO String
-pathToCache str = do
-    dir <- getXdgDirectory XdgCache prog
-    return (dir </> str)
-
-pathToConfig :: String -> IO String
-pathToConfig str = do
-    dir <- getXdgDirectory XdgConfig prog
-    return (dir </> str)
-
-fetch :: String -> IO (Either SomeException Response)
-fetch = try . get
 
 ping :: (Response -> IO ()) -> IO () -> IO ()
 ping run err = do
