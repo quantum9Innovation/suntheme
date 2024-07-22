@@ -5,15 +5,14 @@
 
 module Main where
 
-import Pure (buildCmd, kill, readLines)
+import Pure (buildCmd, readLines)
 import Time (activateOnSunrise, sunriseNow, sunsetNow)
 import Const (darkModeScript, lightModeScript, prog, query)
-import Types (ResponseMsg(..), ResponseCode(..), Status(..), genericErr, toResponseMsg)
+import Sugar (continue, crash, destruct, exec, killall)
+import Types (ResponseMsg(..), ResponseCode(..), genericErr, toResponseMsg)
 
 import Data.List.Extra ((!?))
 import Data.ByteString.Char8 (unpack)
-import System.Exit (ExitCode(ExitFailure), exitWith)
-import System.Process (readProcess)
 import System.FilePath ((</>), takeDirectory)
 import System.Directory (XdgDirectory(XdgCache, XdgConfig), createDirectoryIfMissing, doesFileExist, getXdgDirectory)
 import Control.Exception (SomeException, catch, try)
@@ -39,19 +38,11 @@ pathToConfig str = do
 fetch :: String -> IO (Either SomeException Response)
 fetch = try . get
 
-cont :: (Status s) => s -> IO () -> IO ()
-cont e err = (putStrLn . disp) e >> err
-
-destruct :: (Status s) => s -> IO () -> IO () -> IO ()
-destruct status success failure
-    | ok status = success
-    | otherwise = cont status failure
-
 ping :: (Response -> IO ()) -> IO () -> IO ()
 ping run err = do
     res <- fetch query
     case res of
-        Left e -> cont (toResponseMsg e) err
+        Left e -> continue (toResponseMsg e) err
         Right r ->
             let status = (ResponseCode . responseStatus) r
                 runner = run r
@@ -60,7 +51,7 @@ ping run err = do
 process :: Response -> (Double -> Double -> String -> IO ()) -> IO () -> IO ()
 process r run err =
     case info of
-        Nothing -> cont genericErr err
+        Nothing -> continue genericErr err
         Just (msg, lat, lon, tz) ->
             let status = ResponseMsg msg
                 runner = run lat lon tz
@@ -91,9 +82,6 @@ readCache = do
 processRunner :: Response -> IO ()
 processRunner r = process r dumpCache backupRunner
 
-crash :: IO ()
-crash = exitWith (ExitFailure 1)
-
 backupRunner :: IO ()
 backupRunner = do
     contents <- readCache
@@ -103,16 +91,6 @@ backupRunner = do
             crash
         Just (lat, lon, _) -> prepareScripts lat lon
 
-exec :: String -> (SomeException -> IO String) -> IO String
-exec cmd err = do catch (readProcess "bash" ["-c", cmd] "") err
-
-killall :: [String] -> IO ()
-killall = foldr ((>>) . dispatch . kill) (return ())
-    where
-        dispatch cmd = exec cmd failure
-        failure :: SomeException -> IO String
-        failure e = print e >> return []
-
 start :: IO () -> IO ()
 start act = do
     logFile <- pathToCache "log.txt"
@@ -120,7 +98,7 @@ start act = do
     if existsLog then do
         contents <- readFile logFile
         let entries = lines contents
-        killall entries
+        (sequence_ . killall) entries
     else createDirectoryIfMissing True (takeDirectory logFile)
     act
 
