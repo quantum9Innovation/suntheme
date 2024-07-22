@@ -5,6 +5,9 @@
 
 module Main where
 
+import Const (darkModeScript, lightModeScript, prog, query)
+import Types (ResponseMsg(..), ResponseCode(..), Status(..), genericErr, toResponseMsg)
+
 import Data.Time (ZonedTime, getCurrentTime)
 import Data.Time.Solar (Location(Location), sunrise, sunset)
 import Data.Time.RFC3339 (formatTimeRFC3339)
@@ -24,47 +27,6 @@ import Network.HTTP.Request (Response(responseBody, responseStatus), get)
 -- eliminate as many do blocks as possible
 -- introduce liquid types and checking
 -- whitepaper!
-
-class Status s where
-    ok :: s -> Bool
-    ok = const False
-
-    disp :: s -> String
-    disp = const "encountered bad response (expected OK)"
-
-newtype ResponseCode = ResponseCode Int
-instance Status ResponseCode where
-    ok (ResponseCode code) = code == 200
-    disp (ResponseCode code) =
-        "encountered bad response code: "
-        ++ show code
-        ++ " (expected 200 'OK')"
-
-newtype ResponseMsg = ResponseMsg String
-instance Status ResponseMsg where
-    ok (ResponseMsg msg) = msg == "success"
-    disp (ResponseMsg msg) =
-        "encountered bad response message: "
-        ++ msg
-        ++ " (expected 'success')"
-
-toResponseMsg :: SomeException -> ResponseMsg
-toResponseMsg = ResponseMsg . show
-
-query :: String
-query = "http://ip-api.com/line/?fields=status,lat,lon,timezone"
-
-genericErr :: ResponseMsg
-genericErr = ResponseMsg "encountered unknown error"
-
-prog :: String
-prog = "suntheme"
-
-lightModeScript :: String
-lightModeScript = "light.sh"
-
-darkModeScript :: String
-darkModeScript = "dark.sh"
 
 now :: IO ZonedTime
 now = do
