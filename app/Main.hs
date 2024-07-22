@@ -6,12 +6,10 @@
 module Main where
 
 import Pure (buildCmd, kill, readLines)
+import Time (activateOnSunrise, sunriseNow, sunsetNow)
 import Const (darkModeScript, lightModeScript, prog, query)
 import Types (ResponseMsg(..), ResponseCode(..), Status(..), genericErr, toResponseMsg)
 
-import Data.Time (ZonedTime, getCurrentTime)
-import Data.Time.Solar (Location(Location), sunrise, sunset)
-import Data.Time.LocalTime (getTimeZone, utcToZonedTime, zonedTimeToUTC)
 import Data.List.Extra ((!?))
 import Data.ByteString.Char8 (unpack)
 import System.Exit (ExitCode(ExitFailure), exitWith)
@@ -27,24 +25,6 @@ import Network.HTTP.Request (Response(responseBody, responseStatus), get)
 -- eliminate as many do blocks as possible
 -- introduce liquid types and checking
 -- whitepaper!
-
-now :: IO ZonedTime
-now = do
-    utcTime <- getCurrentTime
-    timeZone <- getTimeZone utcTime
-    return (utcToZonedTime timeZone utcTime)
-
-sunriseNow :: Double -> Double -> IO ZonedTime
-sunriseNow lat lon = do
-    time <- now
-    return (sunrise time here)
-    where here = Location lat lon
-
-sunsetNow :: Double -> Double -> IO ZonedTime
-sunsetNow lat lon = do
-    time <- now
-    return (sunset time here)
-    where here = Location lat lon
 
 pathToCache :: String -> IO String
 pathToCache str = do
@@ -152,15 +132,6 @@ finish queue = do
         num = getId queue
         getId = head . words . last . lines
         failure = print :: SomeException -> IO ()
-
-activateOnSunrise :: ZonedTime -> ZonedTime -> IO Bool
-activateOnSunrise sunriseTime sunsetTime = do
-    timeNow <- now
-    let utcTimeNow = zonedTimeToUTC timeNow
-        utcSunrise = zonedTimeToUTC sunriseTime
-        utcSunset = zonedTimeToUTC sunsetTime
-    if utcTimeNow < utcSunrise || utcTimeNow > utcSunset then return True
-    else return False
 
 prepareScripts :: Double -> Double -> IO ()
 prepareScripts lat lon = do
