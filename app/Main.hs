@@ -5,12 +5,12 @@
 
 module Main where
 
+import Pure (buildCmd, kill, readLines)
 import Const (darkModeScript, lightModeScript, prog, query)
 import Types (ResponseMsg(..), ResponseCode(..), Status(..), genericErr, toResponseMsg)
 
 import Data.Time (ZonedTime, getCurrentTime)
 import Data.Time.Solar (Location(Location), sunrise, sunset)
-import Data.Time.RFC3339 (formatTimeRFC3339)
 import Data.Time.LocalTime (getTimeZone, utcToZonedTime, zonedTimeToUTC)
 import Data.List.Extra ((!?))
 import Data.ByteString.Char8 (unpack)
@@ -77,10 +77,6 @@ ping run err = do
                 runner = run r
             in destruct status runner err
 
-readLines :: [String] -> Maybe (String, Double, Double, String)
-readLines [msg, latStr, lonStr, tz] = Just (msg, read latStr, read lonStr, tz)
-readLines _ = Nothing
-
 process :: Response -> (Double -> Double -> String -> IO ()) -> IO () -> IO ()
 process r run err =
     case info of
@@ -130,9 +126,6 @@ backupRunner = do
 exec :: String -> (SomeException -> IO String) -> IO String
 exec cmd err = do catch (readProcess "bash" ["-c", cmd] "") err
 
-kill :: String -> String
-kill = (++) "atrm "
-
 killall :: [String] -> IO ()
 killall = foldr ((>>) . dispatch . kill) (return ())
     where
@@ -159,15 +152,6 @@ finish queue = do
         num = getId queue
         getId = head . words . last . lines
         failure = print :: SomeException -> IO ()
-
-after :: (Eq a) => a -> [a] -> [a]
-after c = drop 1 . dropWhile (/= c)
-
-formatTime :: ZonedTime -> String
-formatTime = take 5 . after 'T' . formatTimeRFC3339
-
-buildCmd :: String -> ZonedTime -> String
-buildCmd script time = "echo \"" ++ script ++ "\" | at " ++ formatTime time
 
 activateOnSunrise :: ZonedTime -> ZonedTime -> IO Bool
 activateOnSunrise sunriseTime sunsetTime = do
