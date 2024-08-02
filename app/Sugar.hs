@@ -13,10 +13,13 @@ throw e = print e >> return mempty
 continue :: (Status s) => s -> IO () -> IO ()
 continue e err = (putStrLn . disp) e >> err
 
+failure :: SomeException -> IO ()
+failure = print
+
 destruct :: (Status s) => s -> IO () -> IO () -> IO ()
-destruct status success failure
+destruct status success unsuccessful
     | ok status = success
-    | otherwise = continue status failure
+    | otherwise = continue status unsuccessful
 
 crash :: IO ()
 crash = (exitWith . ExitFailure) 1
