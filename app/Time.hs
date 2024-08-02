@@ -1,6 +1,9 @@
 module Time where
 
-import Pure (sunriseNext)
+import Pure (buildCmd, sunriseNext)
+import Cache (pathToConfig)
+import Const (darkModeScript, lightModeScript)
+import Sugar (exec)
 
 import Data.Time (ZonedTime, getCurrentTime)
 import Data.Time.Solar (Location(Location), sunrise, sunset)
@@ -26,3 +29,16 @@ sunsetNow lat lon = do
 
 activateOnSunrise :: ZonedTime -> ZonedTime -> IO Bool
 activateOnSunrise sunriseTime sunsetTime = sunriseNext sunriseTime sunsetTime <$> now
+
+activate :: String -> ZonedTime -> String -> IO String
+activate msg time script = do
+    putStr msg
+    print time
+    scriptPath <- pathToConfig script
+    exec (buildCmd scriptPath time) terminate
+    where terminate _ = print "Scheduling process failed" >> return "" 
+
+chooseActivation :: Bool -> ZonedTime -> ZonedTime -> IO String
+chooseActivation lightMode sunriseTime sunsetTime
+    | lightMode = activate "Light mode activation script scheduled for " sunriseTime lightModeScript
+    | otherwise = activate "Dark mode activation script scheduled for " sunsetTime darkModeScript
