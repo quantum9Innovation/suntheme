@@ -1,12 +1,14 @@
 # Suntheme
 
-runs a script on sunrise and sunset, written in pure haskell.
+Runs a script on sunrise and sunset, written in pure Haskell
+
+---
 
 You may be wondering how a program written in Haskell, the purely functional
-programming language, could possibly act on the real world by running a so-called "script".
+programming language, could possibly act on the real world by running a so-called "script."
 
 It's simple. We take in the entire World as an input to a pure function, the IO Monad.
-It then maps the original World to the changed World, with our desired IO actions carefully applied.
+It then maps the original World to a new (generated) World, with our desired IO actions carefully applied with mathematical precision.
 
 > From the second perspective, an IO action transforms the whole world. IO actions are actually pure, because they receive a unique world as an argument and then return the changed world.
 
@@ -14,13 +16,13 @@ See [this](https://lean-lang.org/functional_programming_in_lean/monads/io.html) 
 
 ## Hacking on suntheme
 
-It's trivially easy to get started with suntheme development thanks to [Nix](https://nixos.org/), the purely functional package manager.
-Naturally, we leverage it as our primary package manager, for both Hackage packages and development tools like language servers and the like.
+It's trivial to get started with suntheme development thanks to [Nix](https://nixos.org/), the purely functional package manager.
+Naturally, we leverage it as our primary package manager, both for Hackage and development tools like language servers and the like.
 
-First, install Nix through your preferred avenue. If unsure, we recommend [the Determinate Nix Installer](https://github.com/DeterminateSystems/nix-installer).
+First, install Nix through your preferred avenue or local system administrator. If unsure, we recommend [the Determinate Nix Installer](https://github.com/DeterminateSystems/nix-installer).
 Make sure flakes and nix-command are enabled (the Determinate Installer will enable them by default).
 
-Once you have `nix`, simply type
+Once you have `nix`, simply type:
 
 ```bash
 nix develop
