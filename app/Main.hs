@@ -1,7 +1,5 @@
--- requires 'at' for running a command at a certain time
--- requires 'date' for converting unix time to human readable time
 -- run on boot and at noon and midnight
--- don't add commands to at while this script is running (monadic purity must be preserved)
+-- don't add commands to `at` while this script is running (monadic purity must be preserved)
 
 module Main where
 
