@@ -15,4 +15,4 @@ jobs:
           name: suntheme
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
       - run: nix build --accept-flake-config
-      - run: nix develop
+      - run: nix develop --accept-flake-config
