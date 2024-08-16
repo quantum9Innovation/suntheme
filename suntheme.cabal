@@ -68,7 +68,7 @@ executable suntheme
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends:    base ^>=4.17.2.1,
+    build-depends:    base ^>=4.19.1.0,
                       request ^>=0.2.2.0, 
                       process ^>=1.6.18.0,
                       bytestring ^>=0.11.5.3,
