@@ -1,5 +1,5 @@
 {
-  description = "Flake for suntheme's development environment and builds";
+  description = "Suntheme's development and build environment";
 
   inputs.haskellNix.url = "github:input-output-hk/haskell.nix";
   inputs.nixpkgs.follows = "haskellNix/nixpkgs-unstable";
@@ -31,7 +31,6 @@
             };
             shell.buildInputs = with pkgs; [
               at
-              busybox
             ];
           };
         })
