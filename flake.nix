@@ -29,6 +29,10 @@
               hlint = {};
               haskell-language-server = {};
             };
+            shell.buildInputs = with pkgs; [
+              at
+              busybox
+            ];
           };
         })
       ];
