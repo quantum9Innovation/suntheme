@@ -49,8 +49,8 @@
       });
 
   nixConfig = {
-    extra-substituters = ["https://cache.iog.io"];
-    extra-trusted-public-keys = ["hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="];
+    extra-substituters = ["https://cache.iog.io" "https://suntheme.cachix.org"];
+    extra-trusted-public-keys = ["hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=" "suntheme.cachix.org-1:fHjlz7YAmMUcLp3tsZis8g9wIsDS6HvECGR3uZETGRo="];
     allow-import-from-derivation = "true";
   };
 }
