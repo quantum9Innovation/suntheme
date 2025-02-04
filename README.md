@@ -14,6 +14,19 @@ It then maps the original World to a new (generated) World, with our desired IO 
 
 See [this](https://lean-lang.org/functional_programming_in_lean/monads/io.html) for more information.
 
+Furthermore, you may wonder how this `suntheme` could possibly be used on a
+_purely functional_ Linux distribution, like NixOS. Wouldn't mutating the
+system colorscheme be pathologically changing the system state? This is simple
+as well. We simply utilize the NixOS specializations feature to generate _two
+copies_ of every single generation, one in dark and one in light theme, and
+then _swap out the entire system_. Therefore no state is mutated and the user
+simply gets swapped onto a specialized generation of NixOS with their desired
+colorscheme. Behold: the genius of purely functional programming.
+
+Work is ongoing to create a turnkey drop-in NixOS module that interfaces with
+Stylix to automatically create the system color activation scripts and expose
+them to `suntheme`.
+
 ## Hacking on suntheme
 
 It's trivial to get started with suntheme development thanks to [Nix](https://nixos.org/), the purely functional package manager.
