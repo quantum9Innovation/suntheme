@@ -17,7 +17,7 @@ See [this](https://lean-lang.org/functional_programming_in_lean/monads/io.html) 
 Furthermore, you may wonder how this `suntheme` could possibly be used on a
 _purely functional_ Linux distribution, like NixOS. Wouldn't mutating the
 system colorscheme be pathologically changing the system state? This is simple
-as well. We simply utilize the NixOS specialisations feature to generate _two
+as well. We simply utilize the NixOS specializations feature to generate _two
 copies_ of every single generation, one in dark and one in light theme, and
 then _swap out the entire system_. Therefore no state is mutated and the user
 simply gets swapped onto a specialized generation of NixOS with their desired
