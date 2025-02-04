@@ -1,56 +1,54 @@
 {
   description = "Suntheme's development and build environment";
 
-  inputs.haskellNix.url = "github:input-output-hk/haskell.nix";
-  inputs.nixpkgs.follows = "haskellNix/nixpkgs-unstable";
-  inputs.flake-utils.url = "github:numtide/flake-utils";
-  outputs = {
-    self,
-    nixpkgs,
-    flake-utils,
-    haskellNix,
-  }: let
-    supportedSystems = [
-      "x86_64-linux"
-      "x86_64-darwin"
-      "aarch64-linux"
-      "aarch64-darwin"
-    ];
-  in
-    flake-utils.lib.eachSystem supportedSystems (system: let
-      overlays = [
-        haskellNix.overlay
-        (final: prev: {
-          suntheme = final.haskell-nix.project' {
-            src = ./.;
-            compiler-nix-name = "ghc982";
-            shell.tools = {
-              cabal = {};
-              hlint = {};
-              haskell-language-server = {};
-            };
-            shell.buildInputs = with pkgs; [
-              at
-            ];
-          };
-        })
+  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+  outputs =
+    {
+      self,
+      nixpkgs,
+    }:
+    let
+      supportedSystems = [
+        "x86_64-linux"
+        "x86_64-darwin"
+        "aarch64-linux"
+        "aarch64-darwin"
       ];
-      pkgs = import nixpkgs {
-        inherit system overlays;
-        inherit (haskellNix) config;
-      };
-      flake = pkgs.suntheme.flake {};
+      forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
     in
-      flake
-      // {
-        formatter = pkgs.alejandra;
+    {
+      formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt-rfc-style);
 
-        packages.default = flake.packages."suntheme:exe:suntheme";
-      });
-
-  nixConfig = {
-    extra-substituters = ["https://cache.iog.io" "https://suntheme.cachix.org"];
-    extra-trusted-public-keys = ["hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=" "suntheme.cachix.org-1:fHjlz7YAmMUcLp3tsZis8g9wIsDS6HvECGR3uZETGRo="];
-    allow-import-from-derivation = "true";
-  };
+      packages = forAllSystems (
+        system:
+        let
+          pkgs = import nixpkgs { inherit system; };
+          hsPkgs = pkgs.haskell.packages.ghc982.override {
+            overrides =
+              self: super:
+              let
+                inherit (pkgs.haskell.lib.compose) markUnbroken doJailbreak;
+                inherit (pkgs.lib) pipe;
+                superUnbreak =
+                  x:
+                  pipe x [
+                    markUnbroken
+                    doJailbreak
+                  ];
+              in
+              {
+                # solar gets very mad because every other package depends on
+                # time 1.10+  while it wants 1.10 so we shut it up
+                solar = superUnbreak super.solar;
+                # request gets very mad because every other package depends on
+                # bytestring 0.12.1.0  while it wants 0.11.5.3 so we shut it up
+                request = superUnbreak super.request;
+              };
+          };
+        in
+        {
+          default = pkgs.haskell.lib.doJailbreak (hsPkgs.callCabal2nix "suntheme" ./. { });
+        }
+      );
+    };
 }
